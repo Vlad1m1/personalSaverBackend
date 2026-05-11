@@ -1,0 +1,36 @@
+  version: '3.8'
+
+  services:
+    app:
+      build: .
+      image: vlad1m1/personal-saver:latest
+      ports:
+        - "8080:8080"
+      depends_on:
+        - db
+      environment:
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/personal_saver
+        - SPRING_DATASOURCE_USERNAME=postgres
+        - SPRING_DATASOURCE_PASSWORD=postgres
+        - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      networks:
+        - personal-saver-network
+
+    db:
+      image: postgres:16-alpine
+      environment:
+        - POSTGRES_DB=personal_saver
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      networks:
+        - personal-saver-network
+
+  networks:
+    personal-saver-network:
+      driver: bridge
+
+  volumes:
+    postgres_data:
+      driver: local
