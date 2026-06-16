@@ -7,39 +7,45 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Schema(description = "Созданное SOS-событие с диагностикой доставки.")
+@Schema(name = "SosResponse", description = "Created SOS event with routing and SMS delivery diagnostics.")
 public record SosResponse(
-        @Schema(description = "Идентификатор SOS-события для GET /api/sos/{id}.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "SOS event id for GET /api/sos/{id}.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", requiredMode = Schema.RequiredMode.REQUIRED)
         UUID id,
 
-        @Schema(description = "Режим доставки, выбранный мобильным приложением.", example = "EMERGENCY_CONTACT", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Delivery target selected by the mobile app.", example = "EMERGENCY_CONTACT", requiredMode = Schema.RequiredMode.REQUIRED)
         SosTargetType targetType,
 
-        @Schema(description = "Идентификатор региона из запроса, если он был передан.", example = "1")
+        @Schema(description = "Region id from the request, if one was provided.", example = "1", nullable = true)
         Long regionId,
 
-        @Schema(description = "Статус обработки SOS-события.", example = "SENT", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Current SOS processing status.", example = "SENT", requiredMode = Schema.RequiredMode.REQUIRED)
         SosStatus status,
 
-        @Schema(description = "Телефон, который backend выбрал для этого SOS после применения правил маршрутизации.", example = "+79991234567", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Phone number selected by the backend after routing and normalization.", example = "+79991234567", requiredMode = Schema.RequiredMode.REQUIRED)
         String targetPhone,
 
-        @Schema(description = "Исходное экстренное сообщение.", example = "Мне нужна помощь. Моя геопозиция приложена.", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Stored emergency message.", example = "I need help", requiredMode = Schema.RequiredMode.REQUIRED)
         String message,
 
-        @Schema(description = "Широта, сохраненная для диагностики, если приложение передало геопозицию.", example = "55.7558")
+        @Schema(description = "Stored latitude.", example = "55.755864", nullable = true)
         Double latitude,
 
-        @Schema(description = "Долгота, сохраненная для диагностики, если приложение передало геопозицию.", example = "37.6173")
+        @Schema(description = "Stored longitude.", example = "37.617698", nullable = true)
         Double longitude,
 
-        @Schema(description = "Диагностика SMS-доставки для экранов Flutter и логов.", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Stored device accuracy in meters.", example = "15", nullable = true)
+        Integer accuracyMeters,
+
+        @Schema(description = "Stored human-readable address.", example = "Moscow, Red Square", nullable = true)
+        String address,
+
+        @Schema(description = "SMS delivery diagnostics for Flutter diagnostics and logs.", requiredMode = Schema.RequiredMode.REQUIRED)
         SmsDeliveryResponse sms,
 
-        @Schema(description = "Время создания SOS-события.", example = "2026-05-12T10:15:30", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "SOS creation timestamp.", example = "2026-05-12T10:15:30", requiredMode = Schema.RequiredMode.REQUIRED)
         LocalDateTime createdAt,
 
-        @Schema(description = "Время последнего изменения статуса.", example = "2026-05-12T10:15:31", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Last status update timestamp.", example = "2026-05-12T10:15:31", requiredMode = Schema.RequiredMode.REQUIRED)
         LocalDateTime updatedAt
 ) {
 }

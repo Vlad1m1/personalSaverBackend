@@ -1,11 +1,11 @@
 package com.vlad1m1.personal.service;
 
+import com.vlad1m1.personal.dto.RegionRequest;
 import com.vlad1m1.personal.dto.RegionResponse;
 import com.vlad1m1.personal.exception.ResourceNotFoundException;
 import com.vlad1m1.personal.mapper.ApiMapper;
 import com.vlad1m1.personal.model.Region;
 import com.vlad1m1.personal.repository.RegionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +14,8 @@ import java.util.Optional;
 
 @Service
 public class RegionService {
-
     private final RegionRepository regionRepository;
 
-    @Autowired
     public RegionService(RegionRepository regionRepository) {
         this.regionRepository = regionRepository;
     }
@@ -33,7 +31,7 @@ public class RegionService {
     public RegionResponse getRegionResponseById(Long id) {
         return regionRepository.findById(id)
                 .map(ApiMapper::toRegionResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Регион не найден: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found: " + id));
     }
 
     @Transactional(readOnly = true)
@@ -47,20 +45,36 @@ public class RegionService {
     }
 
     @Transactional
+    public RegionResponse createRegion(RegionRequest request) {
+        Region region = new Region();
+        region.setRegionName(request.name().trim());
+        region.setEmergencyPhone(blankToNull(request.emergencyPhone()));
+        return ApiMapper.toRegionResponse(regionRepository.save(region));
+    }
+
+    @Transactional
     public Region createRegion(Region region) {
         return regionRepository.save(region);
     }
 
     @Transactional
-    public Region updateRegion(Long id, Region regionDetails) {
+    public RegionResponse updateRegion(Long id, RegionRequest request) {
         Region region = regionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Регион не найден: " + id));
-        region.setRegionName(regionDetails.getRegionName());
-        return regionRepository.save(region);
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found: " + id));
+        region.setRegionName(request.name().trim());
+        region.setEmergencyPhone(blankToNull(request.emergencyPhone()));
+        return ApiMapper.toRegionResponse(regionRepository.save(region));
     }
 
     @Transactional
     public void deleteRegion(Long id) {
+        if (!regionRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Region not found: " + id);
+        }
         regionRepository.deleteById(id);
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

@@ -36,8 +36,6 @@ public class SosEvent {
     @JoinColumn(name = "region_id")
     private Region region;
 
-    private String contactPhone;
-
     private String targetPhone;
 
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -46,6 +44,10 @@ public class SosEvent {
     private Double latitude;
 
     private Double longitude;
+
+    private Integer accuracyMeters;
+
+    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -85,14 +87,6 @@ public class SosEvent {
         this.region = region;
     }
 
-    public String getContactPhone() {
-        return contactPhone;
-    }
-
-    public void setContactPhone(String contactPhone) {
-        this.contactPhone = contactPhone;
-    }
-
     public String getTargetPhone() {
         return targetPhone;
     }
@@ -123,6 +117,22 @@ public class SosEvent {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public Integer getAccuracyMeters() {
+        return accuracyMeters;
+    }
+
+    public void setAccuracyMeters(Integer accuracyMeters) {
+        this.accuracyMeters = accuracyMeters;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public SosStatus getStatus() {

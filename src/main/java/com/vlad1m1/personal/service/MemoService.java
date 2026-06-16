@@ -1,14 +1,17 @@
 package com.vlad1m1.personal.service;
 
 import com.vlad1m1.personal.dto.MemoDetailResponse;
+import com.vlad1m1.personal.dto.MemoRequest;
 import com.vlad1m1.personal.dto.MemoSummaryResponse;
 import com.vlad1m1.personal.dto.MemoUpdatesResponse;
 import com.vlad1m1.personal.exception.ResourceNotFoundException;
 import com.vlad1m1.personal.mapper.ApiMapper;
+import com.vlad1m1.personal.model.Category;
 import com.vlad1m1.personal.model.Memo;
+import com.vlad1m1.personal.model.Region;
+import com.vlad1m1.personal.repository.CategoryRepository;
 import com.vlad1m1.personal.repository.MemoRepository;
 import com.vlad1m1.personal.repository.RegionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,14 +24,14 @@ import java.util.UUID;
 
 @Service
 public class MemoService {
-
     private final MemoRepository memoRepository;
     private final RegionRepository regionRepository;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    public MemoService(MemoRepository memoRepository, RegionRepository regionRepository) {
+    public MemoService(MemoRepository memoRepository, RegionRepository regionRepository, CategoryRepository categoryRepository) {
         this.memoRepository = memoRepository;
         this.regionRepository = regionRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -54,7 +57,7 @@ public class MemoService {
     public MemoDetailResponse getMemoDetail(UUID id) {
         return memoRepository.findById(id)
                 .map(ApiMapper::toMemoDetailResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Памятка не найдена: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Memo not found: " + id));
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +71,19 @@ public class MemoService {
     }
 
     @Transactional
+    public MemoDetailResponse createMemo(MemoRequest request) {
+        Memo memo = new Memo();
+        LocalDateTime now = LocalDateTime.now();
+        memo.setCreatedAt(now);
+        memo.setUpdatedAt(now);
+        apply(memo, request);
+        if (request.active() == null) {
+            memo.setActive(true);
+        }
+        return ApiMapper.toMemoDetailResponse(memoRepository.save(memo));
+    }
+
+    @Transactional
     public Memo createMemo(Memo memo) {
         memo.setCreatedAt(LocalDateTime.now());
         memo.setUpdatedAt(LocalDateTime.now());
@@ -75,26 +91,60 @@ public class MemoService {
     }
 
     @Transactional
-    public Memo updateMemo(UUID id, Memo memoDetails) {
+    public MemoDetailResponse updateMemo(UUID id, MemoRequest request) {
         Memo memo = memoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Памятка не найдена: " + id));
-
-        memo.setCategory(memoDetails.getCategory());
-        memo.setTitle(memoDetails.getTitle());
-        memo.setShortDescription(memoDetails.getShortDescription());
-        memo.setContent(memoDetails.getContent());
-        memo.setVersion(memoDetails.getVersion());
-        memo.setCritical(memoDetails.isCritical());
-        memo.setImageUrl(memoDetails.getImageUrl());
-        memo.setActive(memoDetails.isActive());
+                .orElseThrow(() -> new ResourceNotFoundException("Memo not found: " + id));
+        apply(memo, request);
         memo.setUpdatedAt(LocalDateTime.now());
-
-        return memoRepository.save(memo);
+        return ApiMapper.toMemoDetailResponse(memoRepository.save(memo));
     }
 
     @Transactional
     public void deleteMemo(UUID id) {
+        if (!memoRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Memo not found: " + id);
+        }
         memoRepository.deleteById(id);
+    }
+
+    @Transactional
+    public MemoDetailResponse publishMemo(UUID id) {
+        Memo memo = memoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Memo not found: " + id));
+        memo.setActive(true);
+        memo.setUpdatedAt(LocalDateTime.now());
+        return ApiMapper.toMemoDetailResponse(memoRepository.save(memo));
+    }
+
+    @Transactional
+    public MemoDetailResponse unpublishMemo(UUID id) {
+        Memo memo = memoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Memo not found: " + id));
+        memo.setActive(false);
+        memo.setUpdatedAt(LocalDateTime.now());
+        return ApiMapper.toMemoDetailResponse(memoRepository.save(memo));
+    }
+
+    private void apply(Memo memo, MemoRequest request) {
+        Category category = request.categoryId() == null ? null : categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + request.categoryId()));
+        Region region = request.regionId() == null ? null : regionRepository.findById(request.regionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Region not found: " + request.regionId()));
+
+        memo.setCategory(category);
+        memo.setRegion(region);
+        memo.setTitle(request.title().trim());
+        memo.setShortDescription(blankToEmpty(request.shortDescription()));
+        memo.setContent(blankToEmpty(request.htmlContent()));
+        memo.setSteps(request.steps() == null ? new ArrayList<>() : new ArrayList<>(request.steps()));
+        memo.setVersion(request.version() == null ? 1 : request.version());
+        memo.setCritical(Boolean.TRUE.equals(request.critical()));
+        memo.setImageUrl(blankToNull(request.imageUrl()));
+        memo.setIconName(blankToNull(request.iconName()));
+        memo.setAccentColor(blankToNull(request.accentColor()));
+        if (request.active() != null) {
+            memo.setActive(request.active());
+        }
     }
 
     private List<Memo> loadMemos(Long regionId, LocalDateTime since) {
@@ -116,7 +166,15 @@ public class MemoService {
 
     private void validateRegionIfPresent(Long regionId) {
         if (regionId != null && !regionRepository.existsById(regionId)) {
-            throw new ResourceNotFoundException("Регион не найден: " + regionId);
+            throw new ResourceNotFoundException("Region not found: " + regionId);
         }
+    }
+
+    private String blankToEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

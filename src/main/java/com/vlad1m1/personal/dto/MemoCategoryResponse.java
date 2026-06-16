@@ -4,24 +4,24 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
-@Schema(description = "Категория для группировки памяток в интерфейсе Flutter-приложения.")
+@Schema(description = "Category for grouping memo content in the Flutter app.")
 public record MemoCategoryResponse(
-        @Schema(description = "Идентификатор категории.", example = "10", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Category id.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
         Long id,
 
-        @Schema(description = "Название категории в каталоге памяток.", example = "Первая помощь", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Category display name.", example = "First Aid", requiredMode = Schema.RequiredMode.REQUIRED)
         String name,
 
-        @Schema(description = "Имя Flutter-иконки или ключ иконки из дизайн-системы.", example = "medical_services")
+        @Schema(description = "Flutter icon key or design-system icon name.", example = "medical_services", nullable = true)
         String iconName,
 
-        @Schema(description = "HEX-цвет для акцента категории в мобильном интерфейсе.", example = "#D32F2F")
+        @Schema(description = "HEX accent color.", example = "#D32F2F", nullable = true)
         String accentColor,
 
-        @Schema(description = "Порядок сортировки. Меньшие значения отображаются раньше.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Sort order. Lower values are displayed first.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
         int displayOrder,
 
-        @Schema(description = "Время последнего изменения категории для инвалидации офлайн-кэша.", example = "2026-05-12T08:30:00")
+        @Schema(description = "Last category update timestamp for cache invalidation.", example = "2026-05-12T08:30:00", nullable = true)
         LocalDateTime updatedAt
 ) {
 }

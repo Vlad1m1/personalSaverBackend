@@ -3,7 +3,7 @@ package com.vlad1m1.personal.enums;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(
-        description = "Текущее состояние обработки SOS-события.",
+        description = "Current SOS processing state.",
         allowableValues = {"CREATED", "SENDING", "SENT", "FAILED"},
         example = "SENT"
 )

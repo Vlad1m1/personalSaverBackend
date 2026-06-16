@@ -5,7 +5,6 @@ import com.vlad1m1.personal.dto.ApiErrorResponse;
 import com.vlad1m1.personal.dto.MemoCategoryResponse;
 import com.vlad1m1.personal.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,31 +20,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/memo-categories")
-@Tag(name = "Memo Categories")
+@Tag(name = "Public Memos")
 public class CategoryController {
-
     private final CategoryService categoryService;
 
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
-    @Operation(
-            summary = "Получить категории памяток",
-            description = """
-                    Возвращает категории для каталога памяток во Flutter-приложении. Клиент может использовать
-                    iconName, accentColor и displayOrder для отображения вкладок или фильтров категорий.
-                    """
-    )
+    @Operation(summary = "List memo categories", description = "Returns memo categories used by the Flutter catalog UI for grouping published memos.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Категории памяток успешно возвращены",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            array = @ArraySchema(schema = @Schema(implementation = MemoCategoryResponse.class)),
-                            examples = @ExampleObject(name = "Категории памяток", value = OpenApiExamples.CATEGORIES_RESPONSE))),
-            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка сервера",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiErrorResponse.class),
-                            examples = @ExampleObject(name = "Ошибка сервера", value = OpenApiExamples.INTERNAL_ERROR)))
+            @ApiResponse(responseCode = "200", description = "Categories returned",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = MemoCategoryResponse.class),
+                            examples = @ExampleObject(name = "Categories", value = OpenApiExamples.CATEGORIES_RESPONSE))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping
     public List<MemoCategoryResponse> getAllCategories() {

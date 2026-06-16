@@ -42,6 +42,10 @@ public class Memo {
 
     private String shortDescription;
 
+    private String iconName;
+
+    private String accentColor;
+
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
@@ -101,6 +105,22 @@ public class Memo {
 
     public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
+    }
+
+    public String getIconName() {
+        return iconName;
+    }
+
+    public void setIconName(String iconName) {
+        this.iconName = iconName;
+    }
+
+    public String getAccentColor() {
+        return accentColor;
+    }
+
+    public void setAccentColor(String accentColor) {
+        this.accentColor = accentColor;
     }
 
     public String getContent() {

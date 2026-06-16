@@ -42,6 +42,8 @@ public class RegionalNotification {
 
     private LocalDateTime publishedAt;
 
+    private LocalDateTime receivedAt;
+
     private boolean active = true;
 
     public UUID getId() {
@@ -90,6 +92,14 @@ public class RegionalNotification {
 
     public void setPublishedAt(LocalDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    public LocalDateTime getReceivedAt() {
+        return receivedAt;
+    }
+
+    public void setReceivedAt(LocalDateTime receivedAt) {
+        this.receivedAt = receivedAt;
     }
 
     public boolean isActive() {

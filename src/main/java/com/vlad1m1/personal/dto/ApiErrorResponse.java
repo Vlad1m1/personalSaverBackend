@@ -3,29 +3,38 @@ package com.vlad1m1.personal.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.OffsetDateTime;
-import java.util.Map;
+import java.util.List;
 
-@Schema(description = "Единый формат ошибки, который возвращает API.")
+@Schema(name = "ApiErrorResponse", description = "Unified error response returned by public and admin API endpoints.")
 public record ApiErrorResponse(
-        @Schema(description = "Время формирования ответа с ошибкой.", example = "2026-05-12T10:15:30+03:00", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "UTC or server-offset timestamp when the error response was produced.", example = "2026-05-12T10:00:00Z", requiredMode = Schema.RequiredMode.REQUIRED)
         OffsetDateTime timestamp,
 
-        @Schema(description = "HTTP-статус.", example = "400", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "HTTP status code.", example = "400", minimum = "100", maximum = "599", requiredMode = Schema.RequiredMode.REQUIRED)
         int status,
 
-        @Schema(description = "Краткая причина HTTP-ошибки.", example = "Bad Request", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "HTTP reason phrase.", example = "Bad Request", requiredMode = Schema.RequiredMode.REQUIRED)
         String error,
 
-        @Schema(description = "Человекочитаемое сообщение для логов и инструментов разработки.", example = "Ошибка валидации", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Human-readable error message for logs and developer tooling.", example = "Validation error", requiredMode = Schema.RequiredMode.REQUIRED)
         String message,
 
-        @Schema(description = "Путь запроса, на котором произошла ошибка.", example = "/api/sos", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Request path where the error happened.", example = "/api/sos", requiredMode = Schema.RequiredMode.REQUIRED)
         String path,
 
-        @Schema(description = "Идентификатор запроса для диагностики. Если клиент передал X-Request-Id, API вернет то же значение.", example = "7a2d7f2c-5c59-49a0-b0f2-2f7b2a532c4a", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Request correlation id. If X-Request-Id was sent, the same value is returned.", example = "7f3c2d8a", requiredMode = Schema.RequiredMode.REQUIRED)
         String requestId,
 
-        @Schema(description = "Дополнительные детали ошибки: поля валидации или доменные причины.", example = "{\"contactPhone\":\"contactPhone обязателен для EMERGENCY_CONTACT\"}")
-        Map<String, String> details
+        @Schema(description = "Field-level or domain-specific error details. Empty array means no structured details.", requiredMode = Schema.RequiredMode.REQUIRED)
+        List<ApiErrorDetail> details
 ) {
+    @Schema(name = "ApiErrorDetail", description = "Single validation or domain error detail.")
+    public record ApiErrorDetail(
+            @Schema(description = "Field, parameter, or domain object that caused the error.", example = "latitude", nullable = true)
+            String field,
+
+            @Schema(description = "Developer-facing detail message.", example = "must be greater than or equal to -90", requiredMode = Schema.RequiredMode.REQUIRED)
+            String message
+    ) {
+    }
 }

@@ -22,13 +22,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/sms")
-@Tag(name = "SMS")
+@Tag(name = "Public SOS")
 public class SmsController {
     private static final String SMS_RESPONSE = """
             {
               "recipientPhone": "+79991234567",
               "status": "SENT",
-              "providerMessage": "Принято SMS-провайдером"
+              "providerMessage": "Accepted by SMS provider"
             }
             """;
 
@@ -38,30 +38,21 @@ public class SmsController {
         this.smsService = smsService;
     }
 
-    @Operation(
-            summary = "Получить статус SMS-доставки для SOS",
-            description = """
-                    Диагностический endpoint для статуса SMS-доставки, связанной с SOS-событием.
-                    Мобильное приложение не отправляет произвольные SMS через этот API; SMS-доставка создается через POST /api/sos.
-                    """
-    )
+    @Operation(summary = "Get SOS SMS delivery status", description = "Diagnostic endpoint for SMS delivery related to an SOS event. The mobile app does not send arbitrary SMS through this API; SMS delivery is created by POST /api/sos.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Статус SMS-доставки успешно возвращен",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = SmsDeliveryResponse.class),
-                            examples = @ExampleObject(name = "SMS-доставка", value = SMS_RESPONSE))),
-            @ApiResponse(responseCode = "404", description = "SOS-событие не найдено",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiErrorResponse.class),
-                            examples = @ExampleObject(name = "Не найдено", value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка сервера",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiErrorResponse.class),
-                            examples = @ExampleObject(name = "Ошибка сервера", value = OpenApiExamples.INTERNAL_ERROR)))
+            @ApiResponse(responseCode = "200", description = "SMS delivery status returned",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = SmsDeliveryResponse.class),
+                            examples = @ExampleObject(name = "SMS delivery", value = SMS_RESPONSE))),
+            @ApiResponse(responseCode = "404", description = "SOS event not found",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
+                            examples = @ExampleObject(name = "Not Found", value = OpenApiExamples.NOT_FOUND_ERROR))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
+                            examples = @ExampleObject(name = "Internal Server Error", value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping("/sos/{sosId}")
     public SmsDeliveryResponse getSosSmsDelivery(
-            @Parameter(description = "Id SOS-события, возвращенный POST /api/sos.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", required = true)
+            @Parameter(description = "SOS event id returned by POST /api/sos.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", required = true)
             @PathVariable UUID sosId
     ) {
         return smsService.getSosSmsDelivery(sosId);

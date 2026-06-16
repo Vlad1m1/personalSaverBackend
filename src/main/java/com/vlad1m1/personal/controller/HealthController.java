@@ -22,19 +22,16 @@ import java.time.OffsetDateTime;
 @Tag(name = "Health")
 public class HealthController {
 
-    @Operation(
-            summary = "Проверить доступность backend",
-            description = "Простой smoke-check endpoint для мобильных разработчиков, CI и диагностики деплоя."
-    )
+    @Operation(summary = "Check backend health", description = "Simple smoke-check endpoint for mobile developers, CI, and deployment diagnostics.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Сервис доступен",
+            @ApiResponse(responseCode = "200", description = "Service is available",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = HealthResponse.class),
-                            examples = @ExampleObject(name = "Состояние сервиса", value = OpenApiExamples.HEALTH_RESPONSE))),
-            @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка сервера",
+                            examples = @ExampleObject(name = "Service status", value = OpenApiExamples.HEALTH_RESPONSE))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class),
-                            examples = @ExampleObject(name = "Ошибка сервера", value = OpenApiExamples.INTERNAL_ERROR)))
+                            examples = @ExampleObject(name = "Internal Server Error", value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping
     public HealthResponse getHealth() {

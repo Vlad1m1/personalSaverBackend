@@ -4,15 +4,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.OffsetDateTime;
 
-@Schema(description = "Базовый статус сервиса для smoke-проверок.")
+@Schema(description = "Basic service status for smoke checks.")
 public record HealthResponse(
-        @Schema(description = "Текущий статус сервиса.", example = "UP", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Current service status.", example = "UP", requiredMode = Schema.RequiredMode.REQUIRED)
         String status,
 
-        @Schema(description = "Имя сервиса.", example = "personal-rescue-backend", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Service name.", example = "personal-rescue-backend", requiredMode = Schema.RequiredMode.REQUIRED)
         String service,
 
-        @Schema(description = "Время сервера на момент формирования ответа.", example = "2026-05-12T10:15:30+03:00", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Server timestamp when the response was generated.", example = "2026-05-12T10:15:30Z", requiredMode = Schema.RequiredMode.REQUIRED)
         OffsetDateTime timestamp
 ) {
 }

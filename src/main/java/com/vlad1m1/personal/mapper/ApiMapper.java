@@ -13,6 +13,13 @@ import com.vlad1m1.personal.model.Region;
 import com.vlad1m1.personal.model.RegionalNotification;
 import com.vlad1m1.personal.model.SosEvent;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
+import java.util.Locale;
+
 public final class ApiMapper {
 
     public static RegionResponse toRegionResponse(Region region) {
@@ -40,10 +47,10 @@ public final class ApiMapper {
                 memo.getCategory() == null ? null : memo.getCategory().getId(),
                 memo.getRegion() == null ? null : memo.getRegion().getId(),
                 memo.getTitle(),
+                slug(memo.getTitle()),
                 memo.getShortDescription(),
+                contentHash(memo),
                 memo.getVersion(),
-                memo.isCritical(),
-                memo.getImageUrl(),
                 memo.getUpdatedAt()
         );
     }
@@ -54,9 +61,13 @@ public final class ApiMapper {
                 memo.getCategory() == null ? null : memo.getCategory().getId(),
                 memo.getRegion() == null ? null : memo.getRegion().getId(),
                 memo.getTitle(),
+                slug(memo.getTitle()),
                 memo.getShortDescription(),
                 memo.getContent(),
                 memo.getSteps(),
+                memo.getIconName(),
+                memo.getAccentColor(),
+                contentHash(memo),
                 memo.getVersion(),
                 memo.isCritical(),
                 memo.getImageUrl(),
@@ -65,13 +76,17 @@ public final class ApiMapper {
     }
 
     public static RegionalNotificationResponse toRegionalNotificationResponse(RegionalNotification notification) {
+        LocalDateTime receivedAt = notification.getReceivedAt() == null
+                ? notification.getPublishedAt()
+                : notification.getReceivedAt();
         return new RegionalNotificationResponse(
                 notification.getId(),
                 notification.getRegion().getId(),
                 notification.getTitle(),
                 notification.getMessage(),
                 notification.getSeverity(),
-                notification.getPublishedAt()
+                notification.getPublishedAt(),
+                receivedAt
         );
     }
 
@@ -85,10 +100,41 @@ public final class ApiMapper {
                 event.getMessage(),
                 event.getLatitude(),
                 event.getLongitude(),
+                event.getAccuracyMeters(),
+                event.getAddress(),
                 new SmsDeliveryResponse(event.getTargetPhone(), event.getSmsDeliveryStatus(), event.getSmsProviderMessage()),
                 event.getCreatedAt(),
                 event.getUpdatedAt()
         );
+    }
+
+    private static String slug(String value) {
+        if (value == null || value.isBlank()) {
+            return "memo";
+        }
+        String slug = value.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-|-$)", "");
+        return slug.isBlank() ? "memo" : slug;
+    }
+
+    private static String contentHash(Memo memo) {
+        String source = String.join("|",
+                nullToEmpty(memo.getTitle()),
+                nullToEmpty(memo.getShortDescription()),
+                nullToEmpty(memo.getContent()),
+                String.valueOf(memo.getVersion()),
+                String.valueOf(memo.getUpdatedAt()));
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(source.getBytes(StandardCharsets.UTF_8));
+            return "sha256:" + HexFormat.of().formatHex(digest).substring(0, 12);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is not available", exception);
+        }
+    }
+
+    private static String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private ApiMapper() {

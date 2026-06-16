@@ -6,24 +6,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Schema(description = "Уведомление для пользователей выбранного региона.")
+@Schema(name = "RegionalNotificationResponse", description = "Regional notification displayed in mobile list and home screen widgets.")
 public record RegionalNotificationResponse(
-        @Schema(description = "Идентификатор уведомления.", example = "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Notification id.", example = "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb", requiredMode = Schema.RequiredMode.REQUIRED)
         UUID id,
 
-        @Schema(description = "Идентификатор региона, к которому относится уведомление.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Region id this notification belongs to.", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
         Long regionId,
 
-        @Schema(description = "Короткий заголовок уведомления.", example = "Предупреждение о сильном дожде", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Short notification title.", example = "Storm warning", requiredMode = Schema.RequiredMode.REQUIRED)
         String title,
 
-        @Schema(description = "Текст сообщения для экрана деталей уведомления.", example = "Избегайте низин и следуйте рекомендациям местных экстренных служб.", requiredMode = Schema.RequiredMode.REQUIRED)
-        String message,
+        @Schema(description = "Notification text for details and push-like UI.", example = "Strong wind up to 25 m/s is expected.", requiredMode = Schema.RequiredMode.REQUIRED)
+        String text,
 
-        @Schema(description = "Уровень важности, который влияет на цвет и приоритет в мобильном интерфейсе.", example = "WARNING", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Severity used for visual priority and filtering.", example = "WARNING", requiredMode = Schema.RequiredMode.REQUIRED)
         NotificationSeverity severity,
 
-        @Schema(description = "Время публикации уведомления.", example = "2026-05-12T08:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
-        LocalDateTime publishedAt
+        @Schema(description = "Official publication timestamp. Lists are sorted by publishedAt descending, with receivedAt as a fallback.", example = "2026-05-12T08:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
+        LocalDateTime publishedAt,
+
+        @Schema(description = "Timestamp when the backend received or created the notification.", example = "2026-05-12T08:35:00", requiredMode = Schema.RequiredMode.REQUIRED)
+        LocalDateTime receivedAt
 ) {
 }

@@ -7,11 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface MemoRepository extends JpaRepository<Memo, UUID> {
+    List<Memo> findByTitleIn(Collection<String> titles);
+
     @Query("select m from Memo m where m.isActive = true and m.region is null order by m.updatedAt desc")
     List<Memo> findActiveGeneralMemos();
 
