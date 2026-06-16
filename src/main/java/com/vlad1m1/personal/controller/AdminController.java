@@ -7,6 +7,8 @@ import com.vlad1m1.personal.dto.AdminMemoCreateRequest;
 import com.vlad1m1.personal.dto.AdminMemoUpdateRequest;
 import com.vlad1m1.personal.dto.AdminRegionCreateRequest;
 import com.vlad1m1.personal.dto.AdminRegionUpdateRequest;
+import com.vlad1m1.personal.dto.AlarmRequest;
+import com.vlad1m1.personal.dto.AlarmResponse;
 import com.vlad1m1.personal.dto.ApiErrorResponse;
 import com.vlad1m1.personal.dto.MemoCategoryRequest;
 import com.vlad1m1.personal.dto.MemoCategoryResponse;
@@ -15,6 +17,7 @@ import com.vlad1m1.personal.dto.MemoRequest;
 import com.vlad1m1.personal.dto.NotificationParsingLogResponse;
 import com.vlad1m1.personal.dto.RegionRequest;
 import com.vlad1m1.personal.dto.RegionResponse;
+import com.vlad1m1.personal.service.AlarmService;
 import com.vlad1m1.personal.service.CategoryService;
 import com.vlad1m1.personal.service.MemoService;
 import com.vlad1m1.personal.service.NotificationParsingService;
@@ -54,17 +57,19 @@ public class AdminController {
     private final RegionService regionService;
     private final CategoryService categoryService;
     private final MemoService memoService;
+    private final AlarmService alarmService;
     private final NotificationParsingService notificationParsingService;
 
-    public AdminController(RegionService regionService, CategoryService categoryService, MemoService memoService, NotificationParsingService notificationParsingService) {
+    public AdminController(RegionService regionService, CategoryService categoryService, MemoService memoService, AlarmService alarmService, NotificationParsingService notificationParsingService) {
         this.regionService = regionService;
         this.categoryService = categoryService;
         this.memoService = memoService;
+        this.alarmService = alarmService;
         this.notificationParsingService = notificationParsingService;
     }
 
     @Tag(name = "Admin Regions")
-    @Operation(summary = "Create admin region", description = "Creates a region. Protected by technical X-Admin-Api-Key; this is not user authorization and not a JWT.")
+    @Operation(summary = "Создать регион", description = "Создает регион. Endpoint защищен техническим X-Admin-Api-Key; это не пользовательская авторизация и не JWT.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminRegionCreateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_REGION_CREATE_REQUEST)))
     @AdminResponses(created = true)
     @PostMapping("/regions")
@@ -74,28 +79,28 @@ public class AdminController {
     }
 
     @Tag(name = "Admin Regions")
-    @Operation(summary = "Update admin region", description = "Updates a region used by public catalog, notifications, and SOS routing.")
+    @Operation(summary = "Обновить регион", description = "Обновляет регион, который используется публичным каталогом, уведомлениями и SOS-маршрутизацией.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminRegionUpdateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_REGION_CREATE_REQUEST)))
     @AdminResponses
     @PatchMapping("/regions/{id}")
     public RegionResponse updateRegion(
-            @Parameter(description = "Region id.", example = "1", required = true) @PathVariable Long id,
+            @Parameter(description = "Идентификатор региона.", example = "1", required = true) @PathVariable Long id,
             @org.springframework.web.bind.annotation.RequestBody @Valid AdminRegionUpdateRequest request
     ) {
         return regionService.updateRegion(id, new RegionRequest(request.name(), request.emergencyPhone()));
     }
 
     @Tag(name = "Admin Regions")
-    @Operation(summary = "Delete admin region", description = "Deletes a region. Returns 409 if database constraints prevent deletion.")
+    @Operation(summary = "Удалить регион", description = "Удаляет регион. Возвращает 409, если удалению мешают связи в базе данных.")
     @AdminResponses(noContent = true)
     @DeleteMapping("/regions/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteRegion(@Parameter(description = "Region id.", example = "1", required = true) @PathVariable Long id) {
+    public void deleteRegion(@Parameter(description = "Идентификатор региона.", example = "1", required = true) @PathVariable Long id) {
         regionService.deleteRegion(id);
     }
 
     @Tag(name = "Admin Memo Categories")
-    @Operation(summary = "Create memo category", description = "Creates a category for grouping public memo content.")
+    @Operation(summary = "Создать категорию памяток", description = "Создает категорию для группировки публичных памяток.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminMemoCategoryCreateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_CATEGORY_REQUEST)))
     @AdminResponses(created = true)
     @PostMapping("/memo-categories")
@@ -105,28 +110,28 @@ public class AdminController {
     }
 
     @Tag(name = "Admin Memo Categories")
-    @Operation(summary = "Update memo category", description = "Updates category metadata used by the mobile memo catalog.")
+    @Operation(summary = "Обновить категорию памяток", description = "Обновляет метаданные категории, используемые мобильным каталогом памяток.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminMemoCategoryUpdateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_CATEGORY_REQUEST)))
     @AdminResponses
     @PatchMapping("/memo-categories/{id}")
     public MemoCategoryResponse updateCategory(
-            @Parameter(description = "Category id.", example = "1", required = true) @PathVariable Long id,
+            @Parameter(description = "Идентификатор категории.", example = "1", required = true) @PathVariable Long id,
             @org.springframework.web.bind.annotation.RequestBody @Valid AdminMemoCategoryUpdateRequest request
     ) {
         return categoryService.updateCategory(id, new MemoCategoryRequest(request.name(), request.iconName(), request.accentColor(), request.displayOrder()));
     }
 
     @Tag(name = "Admin Memo Categories")
-    @Operation(summary = "Delete memo category", description = "Deletes a memo category. Returns 409 if existing memos still reference it.")
+    @Operation(summary = "Удалить категорию памяток", description = "Удаляет категорию памяток. Возвращает 409, если на нее ссылаются существующие памятки.")
     @AdminResponses(noContent = true)
     @DeleteMapping("/memo-categories/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@Parameter(description = "Category id.", example = "1", required = true) @PathVariable Long id) {
+    public void deleteCategory(@Parameter(description = "Идентификатор категории.", example = "1", required = true) @PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
 
     @Tag(name = "Admin Memos")
-    @Operation(summary = "Create memo", description = "Creates a memo draft or published memo. Public list endpoints return only active memos.")
+    @Operation(summary = "Создать памятку", description = "Создает черновик или опубликованную памятку. Публичные списки по умолчанию возвращают только активные памятки.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminMemoCreateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_MEMO_REQUEST)))
     @AdminResponses(created = true)
     @PostMapping("/memos")
@@ -136,44 +141,75 @@ public class AdminController {
     }
 
     @Tag(name = "Admin Memos")
-    @Operation(summary = "Update memo", description = "Updates memo content, metadata, version, and publication flag.")
+    @Operation(summary = "Обновить памятку", description = "Обновляет содержимое памятки, метаданные, версию и флаг публикации.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AdminMemoUpdateRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_MEMO_REQUEST)))
     @AdminResponses
     @PatchMapping("/memos/{id}")
     public MemoDetailResponse updateMemo(
-            @Parameter(description = "Memo id.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id,
+            @Parameter(description = "Идентификатор памятки.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id,
             @org.springframework.web.bind.annotation.RequestBody @Valid AdminMemoUpdateRequest request
     ) {
         return memoService.updateMemo(id, toMemoRequest(request));
     }
 
     @Tag(name = "Admin Memos")
-    @Operation(summary = "Delete memo", description = "Deletes a memo by id.")
+    @Operation(summary = "Удалить памятку", description = "Удаляет памятку по id.")
     @AdminResponses(noContent = true)
     @DeleteMapping("/memos/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMemo(@Parameter(description = "Memo id.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
+    public void deleteMemo(@Parameter(description = "Идентификатор памятки.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
         memoService.deleteMemo(id);
     }
 
     @Tag(name = "Admin Memos")
-    @Operation(summary = "Publish memo", description = "Marks a memo as active so it appears in public memo endpoints.")
+    @Operation(summary = "Опубликовать памятку", description = "Помечает памятку как активную, чтобы она появилась в публичных endpoints памяток.")
     @AdminResponses
     @PostMapping("/memos/{id}/publish")
-    public MemoDetailResponse publishMemo(@Parameter(description = "Memo id.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
+    public MemoDetailResponse publishMemo(@Parameter(description = "Идентификатор памятки.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
         return memoService.publishMemo(id);
     }
 
     @Tag(name = "Admin Memos")
-    @Operation(summary = "Unpublish memo", description = "Marks a memo as inactive so it no longer appears in public memo endpoints.")
+    @Operation(summary = "Снять памятку с публикации", description = "Помечает памятку как неактивную, чтобы она больше не отображалась в публичных endpoints по умолчанию.")
     @AdminResponses
     @PostMapping("/memos/{id}/unpublish")
-    public MemoDetailResponse unpublishMemo(@Parameter(description = "Memo id.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
+    public MemoDetailResponse unpublishMemo(@Parameter(description = "Идентификатор памятки.", example = "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3", required = true) @PathVariable UUID id) {
         return memoService.unpublishMemo(id);
     }
 
+    @Tag(name = "Admin Alarms")
+    @Operation(summary = "Создать тревожное уведомление", description = "Создает подробное тревожное уведомление для региона.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AlarmRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_ALARM_REQUEST)))
+    @AdminResponses(created = true)
+    @PostMapping("/alarms")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AlarmResponse createAlarm(@org.springframework.web.bind.annotation.RequestBody @Valid AlarmRequest request) {
+        return alarmService.createAlarm(request);
+    }
+
+    @Tag(name = "Admin Alarms")
+    @Operation(summary = "Обновить тревожное уведомление", description = "Обновляет тревожное уведомление региона.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = AlarmRequest.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_ALARM_REQUEST)))
+    @AdminResponses
+    @PatchMapping("/alarms/{id}")
+    public AlarmResponse updateAlarm(
+            @Parameter(description = "Идентификатор тревожного уведомления.", example = "5f2f8715-2c4f-4ab8-a450-43e693d6641d", required = true) @PathVariable UUID id,
+            @org.springframework.web.bind.annotation.RequestBody @Valid AlarmRequest request
+    ) {
+        return alarmService.updateAlarm(id, request);
+    }
+
+    @Tag(name = "Admin Alarms")
+    @Operation(summary = "Удалить тревожное уведомление", description = "Удаляет тревожное уведомление региона.")
+    @AdminResponses(noContent = true)
+    @DeleteMapping("/alarms/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAlarm(@Parameter(description = "Идентификатор тревожного уведомления.", example = "5f2f8715-2c4f-4ab8-a450-43e693d6641d", required = true) @PathVariable UUID id) {
+        alarmService.deleteAlarm(id);
+    }
+
     @Tag(name = "Admin Notifications")
-    @Operation(summary = "Run notification parsing now", description = "Starts a manual regional notification parsing run and returns its log entry.")
+    @Operation(summary = "Запустить парсинг уведомлений", description = "Запускает ручной парсинг региональных уведомлений и возвращает запись журнала.")
     @AdminResponses
     @PostMapping("/notifications/parse-now")
     public NotificationParsingLogResponse parseNotificationsNow() {
@@ -181,7 +217,7 @@ public class AdminController {
     }
 
     @Tag(name = "Admin Notifications")
-    @Operation(summary = "List notification parsing logs", description = "Returns recent manual notification parsing run logs for admin diagnostics.")
+    @Operation(summary = "Получить журнал парсинга уведомлений", description = "Возвращает последние журналы ручного парсинга уведомлений для диагностики администратора.")
     @AdminResponses
     @GetMapping("/notifications/parsing-logs")
     public List<NotificationParsingLogResponse> getParsingLogs() {
@@ -197,14 +233,14 @@ public class AdminController {
     }
 
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "201", description = "Created"),
-            @ApiResponse(responseCode = "204", description = "No Content"),
-            @ApiResponse(responseCode = "400", description = "Validation Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.VALIDATION_ERROR))),
-            @ApiResponse(responseCode = "401", description = "Invalid or missing admin API key", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_KEY_ERROR))),
-            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "409", description = "Conflict", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.CONFLICT_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
+            @ApiResponse(responseCode = "200", description = "Успешно"),
+            @ApiResponse(responseCode = "201", description = "Создано"),
+            @ApiResponse(responseCode = "204", description = "Нет содержимого"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.VALIDATION_ERROR))),
+            @ApiResponse(responseCode = "401", description = "Административный API-ключ отсутствует или некорректен", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.ADMIN_KEY_ERROR))),
+            @ApiResponse(responseCode = "404", description = "Не найдено", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
+            @ApiResponse(responseCode = "409", description = "Конфликт состояния", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.CONFLICT_ERROR))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)

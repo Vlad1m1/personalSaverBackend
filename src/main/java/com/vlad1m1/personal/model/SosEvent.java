@@ -12,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -36,7 +38,8 @@ public class SosEvent {
     @JoinColumn(name = "region_id")
     private Region region;
 
-    private String targetPhone;
+    @Column(name = "contact_phone", nullable = false)
+    private String contactPhone;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String message;
@@ -47,6 +50,7 @@ public class SosEvent {
 
     private Integer accuracyMeters;
 
+    @Column(length = 500)
     private String address;
 
     @Enumerated(EnumType.STRING)
@@ -57,10 +61,13 @@ public class SosEvent {
     @Column(nullable = false)
     private SmsDeliveryStatus smsDeliveryStatus;
 
+    @Column(length = 500)
     private String smsProviderMessage;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     public UUID getId() {
@@ -87,12 +94,20 @@ public class SosEvent {
         this.region = region;
     }
 
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
     public String getTargetPhone() {
-        return targetPhone;
+        return contactPhone;
     }
 
     public void setTargetPhone(String targetPhone) {
-        this.targetPhone = targetPhone;
+        this.contactPhone = targetPhone;
     }
 
     public String getMessage() {
@@ -173,5 +188,21 @@ public class SosEvent {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @PrePersist
+    private void beforeCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+    }
+
+    @PreUpdate
+    private void beforeUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

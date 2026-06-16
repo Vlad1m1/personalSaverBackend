@@ -26,4 +26,22 @@ public interface MemoRepository extends JpaRepository<Memo, UUID> {
 
     @Query("select m from Memo m where m.isActive = true and m.updatedAt > :since and m.region.id = :regionId order by m.updatedAt desc")
     List<Memo> findUpdatedRegionalMemos(@Param("since") LocalDateTime since, @Param("regionId") Long regionId);
+
+    @Query("""
+            select m from Memo m
+            where (:active is null or m.isActive = :active)
+              and (:critical is null or m.isCritical = :critical)
+              and (:categoryId is null or m.category.id = :categoryId)
+              and (
+                    (:regionId is null and m.region is null)
+                    or (:regionId is not null and (m.region.id = :regionId or m.region is null))
+                  )
+            order by m.updatedAt desc
+            """)
+    List<Memo> findFilteredPublicMemos(
+            @Param("regionId") Long regionId,
+            @Param("categoryId") Long categoryId,
+            @Param("active") Boolean active,
+            @Param("critical") Boolean critical
+    );
 }

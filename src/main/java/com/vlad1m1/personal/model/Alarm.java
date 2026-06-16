@@ -19,9 +19,10 @@ public class Alarm {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id")
+    @JoinColumn(name = "region_id", nullable = false)
     private Region region;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
     // Getters and Setters

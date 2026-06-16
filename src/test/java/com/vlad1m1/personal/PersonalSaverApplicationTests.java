@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @AutoConfigureMockMvc
 class PersonalSaverApplicationTests {
+    private static final String ADMIN_API_KEY = "dev-admin-api-key";
 
     @Autowired
     private MockMvc mockMvc;
@@ -93,5 +94,107 @@ class PersonalSaverApplicationTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("SENT"))
                 .andExpect(jsonPath("$.sms.status").value("SENT"));
+    }
+
+    @Test
+    void filtersMemosByRegionCategoryActiveAndCritical() throws Exception {
+        Long regionId = firstRegionId();
+        Long categoryId = firstCategoryId();
+
+        String memoTitle = "Inactive regional test memo";
+        String createdMemo = mockMvc.perform(post("/api/admin/memos")
+                        .header("X-Admin-Api-Key", ADMIN_API_KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "categoryId": %d,
+                                  "regionId": %d,
+                                  "title": "%s",
+                                  "shortDescription": "Short test description",
+                                  "htmlContent": "<h1>Test memo</h1><p>Body</p>",
+                                  "steps": ["Check the region", "Call 112 if needed"],
+                                  "version": 1,
+                                  "critical": true,
+                                  "active": false
+                                }
+                                """.formatted(categoryId, regionId, memoTitle)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.categoryId").value(categoryId))
+                .andExpect(jsonPath("$.regionId").value(regionId))
+                .andExpect(jsonPath("$.steps").isArray())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        String memoId = JsonPath.read(createdMemo, "$.id");
+        mockMvc.perform(get("/api/memos")
+                        .param("region_id", regionId.toString())
+                        .param("category_id", categoryId.toString())
+                        .param("is_active", "false")
+                        .param("is_critical", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", hasItems(memoId)))
+                .andExpect(jsonPath("$[*].title", hasItems(memoTitle)));
+    }
+
+    @Test
+    void returnsAlarmsByRegion() throws Exception {
+        Long regionId = firstRegionId();
+
+        mockMvc.perform(get("/api/alarms").param("regionId", regionId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$[0].regionId").value(regionId))
+                .andExpect(jsonPath("$[0].text").exists());
+    }
+
+    @Test
+    void createsAndListsSosEventsByRegion() throws Exception {
+        Long regionId = firstRegionId();
+
+        String createdSos = mockMvc.perform(post("/api/sos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "targetType": "EMERGENCY_CONTACT",
+                                  "regionId": %d,
+                                  "contactPhone": "+79991112233",
+                                  "message": "Region SOS without coordinates"
+                                }
+                                """.formatted(regionId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.regionId").value(regionId))
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        String sosId = JsonPath.read(createdSos, "$.id");
+        mockMvc.perform(get("/api/sos").param("region_id", regionId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", hasItems(sosId)));
+    }
+
+    private Long firstRegionId() throws Exception {
+        Number regionId = JsonPath.read(
+                mockMvc.perform(get("/api/regions"))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(StandardCharsets.UTF_8),
+                "$[0].id"
+        );
+        return regionId.longValue();
+    }
+
+    private Long firstCategoryId() throws Exception {
+        Number categoryId = JsonPath.read(
+                mockMvc.perform(get("/api/memo-categories"))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(StandardCharsets.UTF_8),
+                "$[0].id"
+        );
+        return categoryId.longValue();
     }
 }

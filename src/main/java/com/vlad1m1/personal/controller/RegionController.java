@@ -30,12 +30,12 @@ public class RegionController {
         this.regionService = regionService;
     }
 
-    @Operation(summary = "List public regions", description = "Returns regions available to the mobile app for memo filtering, notification filtering, and SOS emergency-service routing.")
+    @Operation(summary = "Получить список регионов", description = "Возвращает регионы, доступные мобильному приложению для фильтрации памяток, уведомлений и маршрутизации SOS в экстренные службы.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Regions returned",
+            @ApiResponse(responseCode = "200", description = "Регионы возвращены",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegionResponse.class),
                             examples = @ExampleObject(name = "Regions", value = OpenApiExamples.REGIONS_RESPONSE))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping
@@ -43,19 +43,19 @@ public class RegionController {
         return regionService.getAllRegionResponses();
     }
 
-    @Operation(summary = "Get public region", description = "Returns a single region by id for mobile diagnostics and local cache repair.")
+    @Operation(summary = "Получить регион", description = "Возвращает один регион по id для диагностики мобильного приложения и восстановления локального кэша.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Region returned",
+            @ApiResponse(responseCode = "200", description = "Регион возвращен",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegionResponse.class),
                             examples = @ExampleObject(name = "Region", value = OpenApiExamples.REGION_RESPONSE))),
-            @ApiResponse(responseCode = "404", description = "Not Found",
+            @ApiResponse(responseCode = "404", description = "Регион не найден",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping("/{id}")
     public RegionResponse getRegionById(
-            @Parameter(description = "Region id.", example = "1", required = true)
+            @Parameter(description = "Идентификатор региона.", example = "1", required = true)
             @PathVariable Long id
     ) {
         return regionService.getRegionResponseById(id);

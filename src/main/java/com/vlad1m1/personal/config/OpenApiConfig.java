@@ -12,24 +12,26 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "Personal Rescue API",
-                description = "Production-like backend API for Personal Rescue mobile application",
+                title = "API Personal Saver",
+                description = "Бэкенд API для мобильного приложения Personal Saver",
                 version = "2.0.0"
         ),
         servers = {
-                @Server(url = "http://localhost:8080", description = "local"),
-                @Server(url = "http://localhost:8080", description = "docker")
+                @Server(url = "http://localhost:8080", description = "Локальный запуск"),
+                @Server(url = "http://localhost:8080", description = "Окружение Docker")
         },
         tags = {
-                @Tag(name = "Public Regions", description = "Read-only region catalog for mobile screens and SOS routing."),
-                @Tag(name = "Public SOS", description = "Mobile SOS creation and diagnostic lookup. The backend does not know app users and does not store user contact lists."),
-                @Tag(name = "Public Memos", description = "Published memo catalog, offline update feed, and HTML content for Flutter WebView."),
-                @Tag(name = "Public Regional Notifications", description = "Active regional notifications for mobile list and home screen widgets."),
-                @Tag(name = "Admin Regions", description = "Technical region management endpoints protected by X-Admin-Api-Key."),
-                @Tag(name = "Admin Memo Categories", description = "Technical memo category management endpoints protected by X-Admin-Api-Key."),
-                @Tag(name = "Admin Memos", description = "Technical memo management and publish workflow endpoints protected by X-Admin-Api-Key."),
-                @Tag(name = "Admin Notifications", description = "Technical notification import and parsing diagnostics protected by X-Admin-Api-Key."),
-                @Tag(name = "Health", description = "Backend availability checks.")
+                @Tag(name = "Public Regions", description = "Публичный справочник регионов для экранов приложения, памяток и SOS-маршрутизации."),
+                @Tag(name = "Public SOS", description = "Создание SOS-событий и просмотр диагностического статуса. Backend не хранит список контактов пользователя."),
+                @Tag(name = "Public Memos", description = "Каталог опубликованных памяток, лента обновлений для offline sync и HTML-контент для Flutter WebView."),
+                @Tag(name = "Public Alarms", description = "Публичные тревожные уведомления по регионам."),
+                @Tag(name = "Public Regional Notifications", description = "Активные региональные уведомления для списка и виджетов главного экрана."),
+                @Tag(name = "Admin Regions", description = "Техническое управление регионами, защищенное X-Admin-Api-Key."),
+                @Tag(name = "Admin Memo Categories", description = "Техническое управление категориями памяток, защищенное X-Admin-Api-Key."),
+                @Tag(name = "Admin Memos", description = "Техническое управление памятками и публикацией, защищенное X-Admin-Api-Key."),
+                @Tag(name = "Admin Alarms", description = "Техническое управление тревожными уведомлениями, защищенное X-Admin-Api-Key."),
+                @Tag(name = "Admin Notifications", description = "Импорт уведомлений и диагностика парсинга, защищенные X-Admin-Api-Key."),
+                @Tag(name = "Health", description = "Проверка доступности backend.")
         }
 )
 @SecurityScheme(
@@ -37,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
         type = SecuritySchemeType.APIKEY,
         in = SecuritySchemeIn.HEADER,
         paramName = "X-Admin-Api-Key",
-        description = "Technical API key for /api/admin/** only. This is not user authorization and not a JWT."
+        description = "Технический API-ключ только для /api/admin/**. Это не пользовательская авторизация и не JWT."
 )
 public class OpenApiConfig {
 }

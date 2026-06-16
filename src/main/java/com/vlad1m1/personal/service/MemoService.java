@@ -4,6 +4,7 @@ import com.vlad1m1.personal.dto.MemoDetailResponse;
 import com.vlad1m1.personal.dto.MemoRequest;
 import com.vlad1m1.personal.dto.MemoSummaryResponse;
 import com.vlad1m1.personal.dto.MemoUpdatesResponse;
+import com.vlad1m1.personal.exception.ApiValidationException;
 import com.vlad1m1.personal.exception.ResourceNotFoundException;
 import com.vlad1m1.personal.mapper.ApiMapper;
 import com.vlad1m1.personal.model.Category;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,8 +38,15 @@ public class MemoService {
 
     @Transactional(readOnly = true)
     public List<MemoSummaryResponse> getMemoSummaries(Long regionId) {
+        return getMemoSummaries(regionId, null, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemoSummaryResponse> getMemoSummaries(Long regionId, Long categoryId, Boolean active, Boolean critical) {
         validateRegionIfPresent(regionId);
-        return loadMemos(regionId, null).stream()
+        validateCategoryIfPresent(categoryId);
+        Boolean activeFilter = active == null ? Boolean.TRUE : active;
+        return memoRepository.findFilteredPublicMemos(regionId, categoryId, activeFilter, critical).stream()
                 .map(ApiMapper::toMemoSummaryResponse)
                 .toList();
     }
@@ -133,9 +142,9 @@ public class MemoService {
 
         memo.setCategory(category);
         memo.setRegion(region);
-        memo.setTitle(request.title().trim());
-        memo.setShortDescription(blankToEmpty(request.shortDescription()));
-        memo.setContent(blankToEmpty(request.htmlContent()));
+        memo.setTitle(requiredTrim(request.title(), "title"));
+        memo.setShortDescription(requiredTrim(request.shortDescription(), "shortDescription"));
+        memo.setContent(requiredTrim(request.htmlContent(), "htmlContent"));
         memo.setSteps(request.steps() == null ? new ArrayList<>() : new ArrayList<>(request.steps()));
         memo.setVersion(request.version() == null ? 1 : request.version());
         memo.setCritical(Boolean.TRUE.equals(request.critical()));
@@ -170,8 +179,17 @@ public class MemoService {
         }
     }
 
-    private String blankToEmpty(String value) {
-        return value == null ? "" : value.trim();
+    private void validateCategoryIfPresent(Long categoryId) {
+        if (categoryId != null && !categoryRepository.existsById(categoryId)) {
+            throw new ResourceNotFoundException("Category not found: " + categoryId);
+        }
+    }
+
+    private String requiredTrim(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new ApiValidationException("Validation error", Map.of(field, field + " is required"));
+        }
+        return value.trim();
     }
 
     private String blankToNull(String value) {

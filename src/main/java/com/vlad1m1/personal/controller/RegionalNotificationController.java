@@ -33,64 +33,64 @@ public class RegionalNotificationController {
         this.regionalNotificationService = regionalNotificationService;
     }
 
-    @Operation(summary = "List regional notifications", description = "Returns active notifications for a region. Use severity to filter WARNING or CRITICAL views. Results are sorted by publishedAt descending, with receivedAt as fallback metadata.")
+    @Operation(summary = "Получить региональные уведомления", description = "Возвращает активные уведомления региона. Параметр severity фильтрует списки WARNING или CRITICAL. Результаты отсортированы по publishedAt по убыванию.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Notifications returned",
+            @ApiResponse(responseCode = "200", description = "Уведомления возвращены",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegionalNotificationResponse.class),
                             examples = {
                                     @ExampleObject(name = "severity=WARNING", value = OpenApiExamples.NOTIFICATIONS_WARNING_RESPONSE),
                                     @ExampleObject(name = "severity=CRITICAL", value = OpenApiExamples.NOTIFICATIONS_CRITICAL_RESPONSE)
                             })),
-            @ApiResponse(responseCode = "400", description = "Invalid query parameter",
+            @ApiResponse(responseCode = "400", description = "Некорректный query-параметр",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.VALIDATION_ERROR))),
-            @ApiResponse(responseCode = "404", description = "Region not found",
+            @ApiResponse(responseCode = "404", description = "Регион не найден",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping
     public List<RegionalNotificationResponse> getNotifications(
-            @Parameter(description = "Required region id.", example = "1", required = true)
+            @Parameter(description = "Обязательный id региона.", example = "1", required = true)
             @RequestParam Long regionId,
-            @Parameter(description = "Optional severity filter.", example = "WARNING")
+            @Parameter(description = "Необязательный фильтр важности.", example = "WARNING")
             @RequestParam(required = false) NotificationSeverity severity,
-            @Parameter(description = "Maximum number of items. Default 50, maximum 100.", example = "20")
+            @Parameter(description = "Максимальное количество элементов. По умолчанию 50, максимум 100.", example = "20")
             @RequestParam(required = false) Integer limit
     ) {
         return regionalNotificationService.getByRegion(regionId, severity, limit);
     }
 
-    @Operation(summary = "Get latest regional notifications", description = "Returns the latest active notifications for the app home screen. Use this endpoint for compact top-of-screen warning widgets.")
+    @Operation(summary = "Получить последние уведомления региона", description = "Возвращает последние активные уведомления для главного экрана приложения и компактных warning-виджетов.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Latest notifications returned",
+            @ApiResponse(responseCode = "200", description = "Последние уведомления возвращены",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegionalNotificationResponse.class),
                             examples = @ExampleObject(name = "Latest notifications", value = OpenApiExamples.NOTIFICATIONS_WARNING_RESPONSE))),
-            @ApiResponse(responseCode = "404", description = "Region not found",
+            @ApiResponse(responseCode = "404", description = "Регион не найден",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping("/latest")
     public List<RegionalNotificationResponse> getLatestNotifications(
-            @Parameter(description = "Required region id.", example = "1", required = true)
+            @Parameter(description = "Обязательный id региона.", example = "1", required = true)
             @RequestParam Long regionId
     ) {
         return regionalNotificationService.getLatestByRegion(regionId);
     }
 
-    @Operation(summary = "Get regional notification", description = "Diagnostic endpoint for opening or logging a specific notification by id.")
+    @Operation(summary = "Получить региональное уведомление", description = "Диагностический endpoint для открытия или логирования конкретного уведомления по id.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Notification returned",
+            @ApiResponse(responseCode = "200", description = "Уведомление возвращено",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegionalNotificationResponse.class),
                             examples = @ExampleObject(name = "Notification", value = OpenApiExamples.NOTIFICATION_RESPONSE))),
-            @ApiResponse(responseCode = "404", description = "Notification not found",
+            @ApiResponse(responseCode = "404", description = "Уведомление не найдено",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class), examples = @ExampleObject(value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping("/{id}")
     public RegionalNotificationResponse getNotificationById(
-            @Parameter(description = "Notification id.", example = "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb", required = true)
+            @Parameter(description = "Идентификатор уведомления.", example = "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb", required = true)
             @PathVariable UUID id
     ) {
         return regionalNotificationService.getById(id);

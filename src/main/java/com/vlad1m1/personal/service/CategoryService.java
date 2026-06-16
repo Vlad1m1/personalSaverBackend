@@ -23,7 +23,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<MemoCategoryResponse> getAllCategoryResponses() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAllByOrderByDisplayOrderAscNameAsc().stream()
                 .map(ApiMapper::toMemoCategoryResponse)
                 .toList();
     }
@@ -37,7 +37,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAllByOrderByDisplayOrderAscNameAsc();
     }
 
     @Transactional(readOnly = true)

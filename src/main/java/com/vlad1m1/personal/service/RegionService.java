@@ -2,6 +2,7 @@ package com.vlad1m1.personal.service;
 
 import com.vlad1m1.personal.dto.RegionRequest;
 import com.vlad1m1.personal.dto.RegionResponse;
+import com.vlad1m1.personal.exception.ApiConflictException;
 import com.vlad1m1.personal.exception.ResourceNotFoundException;
 import com.vlad1m1.personal.mapper.ApiMapper;
 import com.vlad1m1.personal.model.Region;
@@ -46,8 +47,12 @@ public class RegionService {
 
     @Transactional
     public RegionResponse createRegion(RegionRequest request) {
+        String regionName = request.name().trim();
+        if (regionRepository.existsByRegionName(regionName)) {
+            throw new ApiConflictException("Region already exists: " + regionName);
+        }
         Region region = new Region();
-        region.setRegionName(request.name().trim());
+        region.setRegionName(regionName);
         region.setEmergencyPhone(blankToNull(request.emergencyPhone()));
         return ApiMapper.toRegionResponse(regionRepository.save(region));
     }
@@ -61,7 +66,11 @@ public class RegionService {
     public RegionResponse updateRegion(Long id, RegionRequest request) {
         Region region = regionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Region not found: " + id));
-        region.setRegionName(request.name().trim());
+        String regionName = request.name().trim();
+        if (regionRepository.existsByRegionNameAndIdNot(regionName, id)) {
+            throw new ApiConflictException("Region already exists: " + regionName);
+        }
+        region.setRegionName(regionName);
         region.setEmergencyPhone(blankToNull(request.emergencyPhone()));
         return ApiMapper.toRegionResponse(regionRepository.save(region));
     }

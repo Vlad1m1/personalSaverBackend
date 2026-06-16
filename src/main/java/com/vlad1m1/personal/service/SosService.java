@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class SosService {
         SosEvent event = new SosEvent();
         event.setTargetType(request.targetType());
         event.setRegion(region);
-        event.setTargetPhone(targetPhone);
+        event.setContactPhone(targetPhone);
         event.setMessage(request.message().trim());
         event.setLatitude(request.latitude());
         event.setLongitude(request.longitude());
@@ -65,6 +66,17 @@ public class SosService {
         return sosEventRepository.findById(id)
                 .map(ApiMapper::toSosResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("SOS event not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SosResponse> getEvents(Long regionId) {
+        validateRegionIfPresent(regionId);
+        List<SosEvent> events = regionId == null
+                ? sosEventRepository.findAllByOrderByCreatedAtDesc()
+                : sosEventRepository.findByRegionIdOrderByCreatedAtDesc(regionId);
+        return events.stream()
+                .map(ApiMapper::toSosResponse)
+                .toList();
     }
 
     private String resolveTargetPhone(SosRequest request, Region region) {
@@ -94,5 +106,11 @@ public class SosService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private void validateRegionIfPresent(Long regionId) {
+        if (regionId != null && !regionRepository.existsById(regionId)) {
+            throw new ResourceNotFoundException("Region not found: " + regionId);
+        }
     }
 }

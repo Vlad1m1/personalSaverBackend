@@ -1,10 +1,12 @@
 package com.vlad1m1.personal.config;
 
 import com.vlad1m1.personal.enums.NotificationSeverity;
+import com.vlad1m1.personal.model.Alarm;
 import com.vlad1m1.personal.model.Category;
 import com.vlad1m1.personal.model.Memo;
 import com.vlad1m1.personal.model.Region;
 import com.vlad1m1.personal.model.RegionalNotification;
+import com.vlad1m1.personal.repository.AlarmRepository;
 import com.vlad1m1.personal.repository.CategoryRepository;
 import com.vlad1m1.personal.repository.MemoRepository;
 import com.vlad1m1.personal.repository.RegionRepository;
@@ -27,17 +29,20 @@ public class DataInitializer implements ApplicationRunner {
     private final RegionRepository regionRepository;
     private final CategoryRepository categoryRepository;
     private final MemoRepository memoRepository;
+    private final AlarmRepository alarmRepository;
     private final RegionalNotificationRepository notificationRepository;
 
     public DataInitializer(
             RegionRepository regionRepository,
             CategoryRepository categoryRepository,
             MemoRepository memoRepository,
+            AlarmRepository alarmRepository,
             RegionalNotificationRepository notificationRepository
     ) {
         this.regionRepository = regionRepository;
         this.categoryRepository = categoryRepository;
         this.memoRepository = memoRepository;
+        this.alarmRepository = alarmRepository;
         this.notificationRepository = notificationRepository;
     }
 
@@ -47,6 +52,7 @@ public class DataInitializer implements ApplicationRunner {
         seedRegions();
         seedCategories();
         seedMemos();
+        seedAlarms();
         seedNotifications();
     }
 
@@ -440,6 +446,25 @@ public class DataInitializer implements ApplicationRunner {
         return "<h1>" + seed.title() + "</h1><p>" + seed.shortDescription() + "</p>";
     }
 
+    private void seedAlarms() {
+        if (alarmRepository.count() > 0) {
+            return;
+        }
+        List<Region> regions = regionRepository.findAll();
+        if (regions.isEmpty()) {
+            return;
+        }
+        List<String> texts = List.of(
+                "В вашем регионе объявлено экстренное уведомление. Сохраняйте спокойствие, проверяйте официальные источники информации и следуйте инструкциям местных служб. Не распространяйте неподтвержденные сообщения и не выезжайте в зону риска без необходимости.",
+                "Обнаружена потенциально опасная ситуация в выбранном регионе. Избегайте поездок в зону риска, предупредите близких, держите телефон заряженным и ожидайте дальнейших указаний от экстренных служб.",
+                "Поступило важное региональное предупреждение. Проверьте актуальные памятки, подготовьте документы, запас воды, лекарства и средства связи. При ухудшении ситуации обращайтесь по номеру 112.",
+                "Для вашего региона опубликовано срочное уведомление. Ориентируйтесь только на сообщения официальных служб, не подходите к опасным участкам и заранее продумайте безопасный маршрут эвакуации."
+        );
+        for (int index = 0; index < Math.min(regions.size(), texts.size()); index++) {
+            alarmRepository.save(alarm(regions.get(index), texts.get(index)));
+        }
+    }
+
     private void seedNotifications() {
         if (notificationRepository.count() > 0) {
             return;
@@ -491,6 +516,13 @@ public class DataInitializer implements ApplicationRunner {
         notification.setPublishedAt(publishedAt);
         notification.setActive(true);
         return notification;
+    }
+
+    private Alarm alarm(Region region, String text) {
+        Alarm alarm = new Alarm();
+        alarm.setRegion(region);
+        alarm.setText(text);
+        return alarm;
     }
 
     private record MemoSeed(

@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -37,22 +39,22 @@ public class SosController {
     }
 
     @Operation(
-            summary = "Create SOS event",
+            summary = "Создать SOS-событие",
             description = """
-                    Creates an SOS event from the Flutter app and starts SMS delivery.
+                    Создает SOS-событие из Flutter-приложения и запускает доставку SMS.
 
-                    Default rate limit: 5 POST /api/sos requests per minute from one IP address. Exceeding it returns 429 Too Many Requests.
+                    Ограничение по умолчанию: 5 POST /api/sos запросов в минуту с одного IP-адреса. При превышении возвращается 429 Too Many Requests.
 
-                    Coordinates are strictly validated: latitude must be between -90 and 90, longitude between -180 and 180.
-                    message is required and limited to 500 characters. contactPhone is normalized before routing.
+                    Если координаты переданы, они строго валидируются: latitude от -90 до 90, longitude от -180 до 180.
+                    message обязателен и ограничен 500 символами. contactPhone нормализуется перед маршрутизацией.
 
-                    The backend does not know the current app user and does not store the user's contact list. For EMERGENCY_CONTACT,
-                    the selected contact phone is sent in this request only. For EMERGENCY_SERVICE, the backend uses the region emergency phone
-                    or falls back to 112.
+                    Backend не знает текущего пользователя приложения и не хранит список контактов. Для EMERGENCY_CONTACT
+                    телефон выбранного контакта передается только в этом запросе. Для EMERGENCY_SERVICE backend использует телефон региона
+                    или резервный номер 112.
                     """
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "SOS payload produced by the mobile app.",
+            description = "Полезная нагрузка SOS, сформированная мобильным приложением.",
             required = true,
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = SosRequest.class),
@@ -62,19 +64,19 @@ public class SosController {
                     })
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "SOS event created and SMS accepted for delivery",
+            @ApiResponse(responseCode = "201", description = "SOS-событие создано, SMS принято к доставке",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = SosResponse.class),
                             examples = @ExampleObject(name = "Created SOS event", value = OpenApiExamples.SOS_RESPONSE))),
-            @ApiResponse(responseCode = "400", description = "Validation Error",
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Validation Error", value = OpenApiExamples.VALIDATION_ERROR))),
-            @ApiResponse(responseCode = "404", description = "Region not found",
+            @ApiResponse(responseCode = "404", description = "Регион не найден",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Not Found", value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "429", description = "Too Many Requests",
+            @ApiResponse(responseCode = "429", description = "Слишком много запросов",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Rate limit", value = OpenApiExamples.RATE_LIMIT_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Internal Server Error", value = OpenApiExamples.INTERNAL_ERROR)))
     })
@@ -86,23 +88,45 @@ public class SosController {
         return sosService.create(request);
     }
 
-    @Operation(summary = "Get SOS diagnostics", description = "Diagnostic endpoint for a specific SOS event. Use it when the mobile app needs to show or log final SOS/SMS delivery state.")
+    @Operation(summary = "Получить диагностику SOS", description = "Диагностический endpoint конкретного SOS-события. Используйте его, когда приложению нужно показать или залогировать итоговый статус SOS/SMS.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "SOS event returned",
+            @ApiResponse(responseCode = "200", description = "SOS-событие возвращено",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = SosResponse.class),
                             examples = @ExampleObject(name = "SOS result", value = OpenApiExamples.SOS_RESPONSE))),
-            @ApiResponse(responseCode = "404", description = "SOS event not found",
+            @ApiResponse(responseCode = "404", description = "SOS-событие не найдено",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Not Found", value = OpenApiExamples.NOT_FOUND_ERROR))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
                             examples = @ExampleObject(name = "Internal Server Error", value = OpenApiExamples.INTERNAL_ERROR)))
     })
     @GetMapping("/{id}")
     public SosResponse getSosById(
-            @Parameter(description = "SOS event id returned by POST /api/sos.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", required = true)
+            @Parameter(description = "Идентификатор SOS-события, возвращенный POST /api/sos.", example = "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f", required = true)
             @PathVariable UUID id
     ) {
         return sosService.getById(id);
+    }
+
+    @Operation(summary = "Получить список SOS-событий", description = "Возвращает созданные SOS-события. Необязательный regionId/region_id фильтрует события по региону.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "SOS-события возвращены",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = SosResponse.class),
+                            examples = @ExampleObject(name = "SOS events", value = OpenApiExamples.SOS_EVENTS_RESPONSE))),
+            @ApiResponse(responseCode = "404", description = "Регион не найден",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
+                            examples = @ExampleObject(name = "Not Found", value = OpenApiExamples.NOT_FOUND_ERROR))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApiErrorResponse.class),
+                            examples = @ExampleObject(name = "Internal Server Error", value = OpenApiExamples.INTERNAL_ERROR)))
+    })
+    @GetMapping
+    public List<SosResponse> getSosEvents(
+            @Parameter(description = "Необязательный id региона.", example = "1")
+            @RequestParam(required = false) Long regionId,
+            @Parameter(description = "Необязательный id региона в snake_case.", example = "1")
+            @RequestParam(name = "region_id", required = false) Long regionIdSnake
+    ) {
+        return sosService.getEvents(regionId != null ? regionId : regionIdSnake);
     }
 }

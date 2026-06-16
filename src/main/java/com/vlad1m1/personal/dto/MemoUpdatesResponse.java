@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@Schema(name = "MemoUpdateResponse", description = "Offline synchronization response with memos changed after the requested timestamp.")
+@Schema(name = "MemoUpdateResponse", description = "Ответ offline-синхронизации с памятками, измененными после указанного времени.")
 public record MemoUpdatesResponse(
-        @Schema(description = "Server time when the sync response was generated.", example = "2026-05-12T10:15:30Z", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Серверное время формирования ответа синхронизации.", example = "2026-05-12T10:15:30Z", requiredMode = Schema.RequiredMode.REQUIRED)
         OffsetDateTime generatedAt,
 
-        @Schema(description = "Updated global and regional memos matching since and regionId.", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Обновленные глобальные и региональные памятки, подходящие под since и regionId.", requiredMode = Schema.RequiredMode.REQUIRED)
         List<MemoSummaryResponse> memos
 ) {
 }

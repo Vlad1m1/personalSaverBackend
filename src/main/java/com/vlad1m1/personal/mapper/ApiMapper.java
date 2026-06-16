@@ -1,5 +1,6 @@
 package com.vlad1m1.personal.mapper;
 
+import com.vlad1m1.personal.dto.AlarmResponse;
 import com.vlad1m1.personal.dto.MemoCategoryResponse;
 import com.vlad1m1.personal.dto.MemoDetailResponse;
 import com.vlad1m1.personal.dto.MemoSummaryResponse;
@@ -7,6 +8,7 @@ import com.vlad1m1.personal.dto.RegionResponse;
 import com.vlad1m1.personal.dto.RegionalNotificationResponse;
 import com.vlad1m1.personal.dto.SmsDeliveryResponse;
 import com.vlad1m1.personal.dto.SosResponse;
+import com.vlad1m1.personal.model.Alarm;
 import com.vlad1m1.personal.model.Category;
 import com.vlad1m1.personal.model.Memo;
 import com.vlad1m1.personal.model.Region;
@@ -105,6 +107,14 @@ public final class ApiMapper {
                 new SmsDeliveryResponse(event.getTargetPhone(), event.getSmsDeliveryStatus(), event.getSmsProviderMessage()),
                 event.getCreatedAt(),
                 event.getUpdatedAt()
+        );
+    }
+
+    public static AlarmResponse toAlarmResponse(Alarm alarm) {
+        return new AlarmResponse(
+                alarm.getId(),
+                alarm.getRegion().getId(),
+                alarm.getText()
         );
     }
 

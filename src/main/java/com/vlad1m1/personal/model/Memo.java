@@ -11,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,15 +40,19 @@ public class Memo {
     @JoinColumn(name = "region_id")
     private Region region;
 
+    @Column(nullable = false)
     private String title;
 
+    @Column(name = "short_description", nullable = false, length = 500)
     private String shortDescription;
 
+    @Column(name = "icon_name")
     private String iconName;
 
+    @Column(name = "accent_color")
     private String accentColor;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -54,17 +60,23 @@ public class Memo {
     @Column(name = "step")
     private List<String> steps = new ArrayList<>();
 
-    private int version;
+    @Column(nullable = false)
+    private int version = 1;
 
+    @Column(name = "is_critical", nullable = false)
     private boolean isCritical;
 
+    @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private boolean isActive;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
     // Getters and Setters
     public UUID getId() {
@@ -185,5 +197,24 @@ public class Memo {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    @PrePersist
+    private void beforeCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (version == 0) {
+            version = 1;
+        }
+    }
+
+    @PreUpdate
+    private void beforeUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

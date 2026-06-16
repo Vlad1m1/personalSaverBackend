@@ -82,7 +82,7 @@ public final class OpenApiExamples {
             [
               {
                 "id": 1,
-                "name": "Moscow",
+                "name": "Москва",
                 "emergencyPhone": "112"
               }
             ]
@@ -91,21 +91,21 @@ public final class OpenApiExamples {
     public static final String REGION_RESPONSE = """
             {
               "id": 1,
-              "name": "Moscow",
+              "name": "Москва",
               "emergencyPhone": "112"
             }
             """;
 
     public static final String ADMIN_REGION_CREATE_REQUEST = """
             {
-              "name": "Moscow",
+              "name": "Москва",
               "emergencyPhone": "112"
             }
             """;
 
     public static final String ADMIN_CATEGORY_REQUEST = """
             {
-              "name": "First Aid",
+              "name": "Первая помощь",
               "iconName": "medical_services",
               "accentColor": "#D32F2F",
               "displayOrder": 1
@@ -116,7 +116,7 @@ public final class OpenApiExamples {
             [
               {
                 "id": 1,
-                "name": "First Aid",
+                "name": "Первая помощь",
                 "iconName": "medical_services",
                 "accentColor": "#D32F2F",
                 "displayOrder": 1,
@@ -125,14 +125,25 @@ public final class OpenApiExamples {
             ]
             """;
 
+    public static final String CATEGORY_RESPONSE = """
+            {
+              "id": 1,
+              "name": "Первая помощь",
+              "iconName": "medical_services",
+              "accentColor": "#D32F2F",
+              "displayOrder": 1,
+              "updatedAt": "2026-05-12T08:30:00"
+            }
+            """;
+
     public static final String MEMO_ITEM = """
             {
               "id": "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3",
               "categoryId": 1,
               "regionId": null,
-              "title": "What to do during a fire",
+              "title": "Что делать при пожаре",
               "slug": "fire-safety",
-              "shortDescription": "Short fire safety instruction",
+              "shortDescription": "Краткая инструкция по пожарной безопасности",
               "contentHash": "sha256:4b4f3c0d7f9a",
               "version": 3,
               "updatedAt": "2026-05-12T10:00:00"
@@ -145,9 +156,9 @@ public final class OpenApiExamples {
                 "id": "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3",
                 "categoryId": 1,
                 "regionId": null,
-                "title": "What to do during a fire",
+                "title": "Что делать при пожаре",
                 "slug": "fire-safety",
-                "shortDescription": "Short fire safety instruction",
+                "shortDescription": "Краткая инструкция по пожарной безопасности",
                 "contentHash": "sha256:4b4f3c0d7f9a",
                 "version": 3,
                 "updatedAt": "2026-05-12T10:00:00"
@@ -163,9 +174,9 @@ public final class OpenApiExamples {
                   "id": "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3",
                   "categoryId": 1,
                   "regionId": 1,
-                  "title": "Flood warning checklist",
+                  "title": "Памятка при угрозе наводнения",
                   "slug": "flood-warning-checklist",
-                  "shortDescription": "Prepare documents and avoid flooded roads.",
+                  "shortDescription": "Подготовьте документы и избегайте затопленных дорог.",
                   "contentHash": "sha256:9a7c8e1d2f3b",
                   "version": 4,
                   "updatedAt": "2026-05-12T09:20:00"
@@ -179,10 +190,10 @@ public final class OpenApiExamples {
               "id": "8c7a15f8-2f68-4d8d-8cbb-2b26f1c4b4d3",
               "categoryId": 1,
               "regionId": null,
-              "title": "What to do during a fire",
+              "title": "Что делать при пожаре",
               "slug": "fire-safety",
-              "shortDescription": "Short fire safety instruction",
-              "htmlContent": "<h1>What to do during a fire</h1><ol><li>Leave the building.</li><li>Call 112.</li></ol>",
+              "shortDescription": "Краткая инструкция по пожарной безопасности",
+              "htmlContent": "<h1>Что делать при пожаре</h1><ol><li>Покиньте здание.</li><li>Позвоните 112.</li></ol>",
               "contentHash": "sha256:4b4f3c0d7f9a",
               "version": 3,
               "critical": true,
@@ -194,10 +205,10 @@ public final class OpenApiExamples {
             {
               "categoryId": 1,
               "regionId": null,
-              "title": "What to do during a fire",
-              "shortDescription": "Short fire safety instruction",
-              "htmlContent": "<h1>What to do during a fire</h1><ol><li>Leave the building.</li><li>Call 112.</li></ol>",
-              "steps": ["Leave the building", "Call 112"],
+              "title": "Что делать при пожаре",
+              "shortDescription": "Краткая инструкция по пожарной безопасности",
+              "htmlContent": "<h1>Что делать при пожаре</h1><ol><li>Покиньте здание.</li><li>Позвоните 112.</li></ol>",
+              "steps": ["Покиньте здание", "Позвоните 112"],
               "version": 3,
               "critical": true,
               "active": false
@@ -210,9 +221,9 @@ public final class OpenApiExamples {
               "latitude": 55.755864,
               "longitude": 37.617698,
               "accuracyMeters": 15,
-              "address": "Moscow, Red Square",
-              "message": "I need help",
-              "contactName": "Mom",
+              "address": "Москва, Красная площадь",
+              "message": "Нужна срочная помощь",
+              "contactName": "Мама",
               "contactPhone": "+79991234567"
             }
             """;
@@ -224,8 +235,8 @@ public final class OpenApiExamples {
               "latitude": 55.755864,
               "longitude": 37.617698,
               "accuracyMeters": 15,
-              "address": "Moscow, Red Square",
-              "message": "A person needs urgent medical help"
+              "address": "Москва, Красная площадь",
+              "message": "Человеку нужна срочная медицинская помощь"
             }
             """;
 
@@ -236,11 +247,11 @@ public final class OpenApiExamples {
               "regionId": null,
               "status": "SENT",
               "targetPhone": "+79991234567",
-              "message": "I need help",
+              "message": "Нужна срочная помощь",
               "latitude": 55.755864,
               "longitude": 37.617698,
               "accuracyMeters": 15,
-              "address": "Moscow, Red Square",
+              "address": "Москва, Красная площадь",
               "sms": {
                 "recipientPhone": "+79991234567",
                 "status": "SENT",
@@ -251,13 +262,62 @@ public final class OpenApiExamples {
             }
             """;
 
+    public static final String SOS_EVENTS_RESPONSE = """
+            [
+              {
+                "id": "3b06b36f-8077-4f03-b8cf-bb7a7b9b6f6f",
+                "targetType": "EMERGENCY_CONTACT",
+                "regionId": 1,
+                "status": "SENT",
+                "targetPhone": "+79991234567",
+                "message": "Нужна срочная помощь",
+                "latitude": 55.755864,
+                "longitude": 37.617698,
+                "accuracyMeters": 15,
+                "address": "Москва, Красная площадь",
+                "sms": {
+                  "recipientPhone": "+79991234567",
+                  "status": "SENT",
+                  "providerMessage": "Accepted by SMS provider"
+                },
+                "createdAt": "2026-05-12T10:15:30",
+                "updatedAt": "2026-05-12T10:15:31"
+              }
+            ]
+            """;
+
+    public static final String ADMIN_ALARM_REQUEST = """
+            {
+              "regionId": 1,
+              "text": "В вашем регионе объявлено экстренное уведомление. Сохраняйте спокойствие, проверяйте официальные источники информации и следуйте инструкциям местных служб."
+            }
+            """;
+
+    public static final String ALARM_RESPONSE = """
+            {
+              "id": "5f2f8715-2c4f-4ab8-a450-43e693d6641d",
+              "regionId": 1,
+              "text": "В вашем регионе объявлено экстренное уведомление. Сохраняйте спокойствие, проверяйте официальные источники информации и следуйте инструкциям местных служб."
+            }
+            """;
+
+    public static final String ALARMS_RESPONSE = """
+            [
+              {
+                "id": "5f2f8715-2c4f-4ab8-a450-43e693d6641d",
+                "regionId": 1,
+                "text": "В вашем регионе объявлено экстренное уведомление. Сохраняйте спокойствие, проверяйте официальные источники информации и следуйте инструкциям местных служб."
+              }
+            ]
+            """;
+
     public static final String NOTIFICATIONS_WARNING_RESPONSE = """
             [
               {
                 "id": "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb",
                 "regionId": 1,
-                "title": "Storm warning",
-                "text": "Strong wind up to 25 m/s is expected.",
+                "title": "Штормовое предупреждение",
+                "text": "Ожидается сильный ветер до 25 м/с.",
                 "severity": "WARNING",
                 "publishedAt": "2026-05-12T08:30:00",
                 "receivedAt": "2026-05-12T08:35:00"
@@ -270,8 +330,8 @@ public final class OpenApiExamples {
               {
                 "id": "f7f10c2f-8321-4d36-a49d-8b1f4124d40a",
                 "regionId": 1,
-                "title": "Evacuation required",
-                "text": "Follow official evacuation instructions immediately.",
+                "title": "Требуется эвакуация",
+                "text": "Немедленно следуйте официальным инструкциям по эвакуации.",
                 "severity": "CRITICAL",
                 "publishedAt": "2026-05-12T09:30:00",
                 "receivedAt": "2026-05-12T09:31:00"
@@ -283,8 +343,8 @@ public final class OpenApiExamples {
             {
               "id": "d8df5b89-6845-4b2f-ae58-b3c6c8edc7fb",
               "regionId": 1,
-              "title": "Storm warning",
-              "text": "Strong wind up to 25 m/s is expected.",
+              "title": "Штормовое предупреждение",
+              "text": "Ожидается сильный ветер до 25 м/с.",
               "severity": "WARNING",
               "publishedAt": "2026-05-12T08:30:00",
               "receivedAt": "2026-05-12T08:35:00"
