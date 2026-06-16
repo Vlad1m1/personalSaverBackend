@@ -1,11 +1,15 @@
 package com.vlad1m1.personal;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -38,7 +42,7 @@ class PersonalSaverApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(6)));
 
-        mockMvc.perform(get("/api/memos"))
+        MvcResult memosResult = mockMvc.perform(get("/api/memos"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(14)))
                 .andExpect(jsonPath("$[*].title", hasItems(
@@ -57,7 +61,18 @@ class PersonalSaverApplicationTests {
                         "Действия при землетрясении",
                         "Действия при утечке газа"
                 )))
-                .andExpect(jsonPath("$[0].steps").isArray());
+                .andExpect(jsonPath("$[0].contentHash").exists())
+                .andReturn();
+
+        String memoId = JsonPath.read(
+                memosResult.getResponse().getContentAsString(StandardCharsets.UTF_8),
+                "$[0].id"
+        );
+
+        mockMvc.perform(get("/api/memos/{id}", memoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.steps").isArray())
+                .andExpect(jsonPath("$.htmlContent").exists());
 
     }
 
@@ -68,6 +83,9 @@ class PersonalSaverApplicationTests {
                         .content("""
                                 {
                                   "targetType": "EMERGENCY_CONTACT",
+                                  "latitude": 55.755864,
+                                  "longitude": 37.617698,
+                                  "accuracyMeters": 15,
                                   "contactPhone": "+79990000000",
                                   "message": "Test SOS"
                                 }
