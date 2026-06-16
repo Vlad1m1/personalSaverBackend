@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,6 +36,13 @@ class PersonalSaverApplicationTests {
 
     @Test
     void contextLoads() {
+    }
+
+    @Test
+    void openApiUsesHttpsProductionServerByDefault() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.servers[0].url").value("https://personal-saver.ru"));
     }
 
     @Test
@@ -63,6 +71,9 @@ class PersonalSaverApplicationTests {
                         "Действия при утечке газа"
                 )))
                 .andExpect(jsonPath("$[0].contentHash").exists())
+                .andExpect(jsonPath("$[*].iconName", hasItems("favorite", "local_fire_department", "gas_meter")))
+                .andExpect(jsonPath("$[*].accentColor", hasItems("#C62828", "#D84315", "#6D4C41")))
+                .andExpect(jsonPath("$[0].imageUrl").exists())
                 .andReturn();
 
         String memoId = JsonPath.read(
@@ -146,6 +157,22 @@ class PersonalSaverApplicationTests {
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(1)))
                 .andExpect(jsonPath("$[0].regionId").value(regionId))
                 .andExpect(jsonPath("$[0].text").exists());
+    }
+
+    @Test
+    void notificationsIncludeDetailedDescriptions() throws Exception {
+        Long regionId = firstRegionId();
+
+        String response = mockMvc.perform(get("/api/notifications").param("regionId", regionId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$[0].text").exists())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        String text = JsonPath.read(response, "$[0].text");
+        assertTrue(text.length() > 120, "notification text should include actionable details");
     }
 
     @Test

@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
                 version = "2.0.0"
         ),
         servers = {
-                @Server(url = "http://localhost:8080", description = "Локальный запуск"),
-                @Server(url = "http://localhost:8080", description = "Окружение Docker")
+                @Server(url = "https://personal-saver.ru", description = "Production HTTPS"),
+                @Server(url = "http://localhost:8080", description = "Локальный запуск")
         },
         tags = {
                 @Tag(name = "Public Regions", description = "Публичный справочник регионов для экранов приложения, памяток и SOS-маршрутизации."),

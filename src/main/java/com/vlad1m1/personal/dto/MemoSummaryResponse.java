@@ -25,6 +25,15 @@ public record MemoSummaryResponse(
         @Schema(description = "Краткое описание для каталога.", example = "Краткая инструкция по пожарной безопасности", nullable = true)
         String shortDescription,
 
+        @Schema(description = "Ключ Flutter-иконки конкретной памятки. Клиент должен использовать его перед fallback-иконкой категории.", example = "local_fire_department", nullable = true)
+        String iconName,
+
+        @Schema(description = "Акцентный HEX-цвет конкретной памятки. Если отсутствует, клиент может использовать цвет категории.", example = "#D84315", nullable = true)
+        String accentColor,
+
+        @Schema(description = "Необязательный URL изображения памятки для карточек и деталей.", example = "https://cdn.example.com/memos/fire.png", nullable = true)
+        String imageUrl,
+
         @Schema(description = "Хэш содержимого и метаданных памятки. Используется для проверки изменений кэша.", example = "sha256:4b4f3c0d7f9a", requiredMode = Schema.RequiredMode.REQUIRED)
         String contentHash,
 

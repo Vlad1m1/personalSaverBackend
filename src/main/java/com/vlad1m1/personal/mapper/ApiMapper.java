@@ -51,6 +51,9 @@ public final class ApiMapper {
                 memo.getTitle(),
                 slug(memo.getTitle()),
                 memo.getShortDescription(),
+                memo.getIconName(),
+                memo.getAccentColor(),
+                memo.getImageUrl(),
                 contentHash(memo),
                 memo.getVersion(),
                 memo.getUpdatedAt()

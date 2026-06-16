@@ -144,6 +144,9 @@ public final class OpenApiExamples {
               "title": "Что делать при пожаре",
               "slug": "fire-safety",
               "shortDescription": "Краткая инструкция по пожарной безопасности",
+              "iconName": "local_fire_department",
+              "accentColor": "#D84315",
+              "imageUrl": "https://cdn.example.com/memos/fire.png",
               "contentHash": "sha256:4b4f3c0d7f9a",
               "version": 3,
               "updatedAt": "2026-05-12T10:00:00"
@@ -159,6 +162,9 @@ public final class OpenApiExamples {
                 "title": "Что делать при пожаре",
                 "slug": "fire-safety",
                 "shortDescription": "Краткая инструкция по пожарной безопасности",
+                "iconName": "local_fire_department",
+                "accentColor": "#D84315",
+                "imageUrl": "https://cdn.example.com/memos/fire.png",
                 "contentHash": "sha256:4b4f3c0d7f9a",
                 "version": 3,
                 "updatedAt": "2026-05-12T10:00:00"
@@ -177,6 +183,9 @@ public final class OpenApiExamples {
                   "title": "Памятка при угрозе наводнения",
                   "slug": "flood-warning-checklist",
                   "shortDescription": "Подготовьте документы и избегайте затопленных дорог.",
+                  "iconName": "flood",
+                  "accentColor": "#0277BD",
+                  "imageUrl": "https://cdn.example.com/memos/flood.png",
                   "contentHash": "sha256:9a7c8e1d2f3b",
                   "version": 4,
                   "updatedAt": "2026-05-12T09:20:00"

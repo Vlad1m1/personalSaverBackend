@@ -466,21 +466,36 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedNotifications() {
-        if (notificationRepository.count() > 0) {
-            return;
-        }
         List<Region> regions = regionRepository.findAll();
         if (regions.isEmpty()) {
             return;
         }
         LocalDateTime now = LocalDateTime.now();
         for (Region region : regions) {
-            notificationRepository.save(notification(region, "Погодное предупреждение", "Следите за сообщениями экстренных служб и избегайте рискованных маршрутов.", NotificationSeverity.WARNING, now.minusHours(2)));
+            upsertNotification(
+                    region,
+                    "Погодное предупреждение",
+                    "В регионе действует погодное предупреждение. Проверьте прогноз перед выходом, избегайте подтопленных и открытых участков, держите телефон заряженным и следите за сообщениями экстренных служб. При ухудшении обстановки оставайтесь в безопасном помещении и не выезжайте без необходимости.",
+                    NotificationSeverity.WARNING,
+                    now.minusHours(2)
+            );
         }
         regions.stream().filter(region -> region.getRegionName().equals("Москва")).findFirst()
-                .ifPresent(region -> notificationRepository.save(notification(region, "Штормовой ветер", "Ожидается сильный дождь, гроза и порывы ветра до 20 м/с.", NotificationSeverity.DANGER, now.minusMinutes(45))));
+                .ifPresent(region -> upsertNotification(
+                        region,
+                        "Штормовой ветер",
+                        "Ожидается сильный дождь, гроза и порывы ветра до 20 м/с. По возможности перенесите поездки, не паркуйте автомобиль рядом с деревьями и рекламными конструкциями, уберите вещи с балконов. На улице держитесь подальше от линий электропередачи и временных сооружений.",
+                        NotificationSeverity.DANGER,
+                        now.minusMinutes(45)
+                ));
         regions.stream().filter(region -> region.getRegionName().equals("Краснодарский край")).findFirst()
-                .ifPresent(region -> notificationRepository.save(notification(region, "Экстренное предупреждение", "Возможны смерчи над морем на участке Анапа - Магри.", NotificationSeverity.CRITICAL, now.minusMinutes(20))));
+                .ifPresent(region -> upsertNotification(
+                        region,
+                        "Экстренное предупреждение",
+                        "Возможны смерчи над морем на участке Анапа - Магри. Не выходите в море, избегайте пляжей и набережных, предупредите близких и туристов рядом. Если вы уже на побережье, перейдите в капитальное здание, держитесь подальше от окон и выполняйте указания спасателей.",
+                        NotificationSeverity.CRITICAL,
+                        now.minusMinutes(20)
+                ));
     }
 
     private Category findOrCreateCategory(String name, String iconName, String accentColor, int displayOrder, LocalDateTime updatedAt) {
@@ -516,6 +531,23 @@ public class DataInitializer implements ApplicationRunner {
         notification.setPublishedAt(publishedAt);
         notification.setActive(true);
         return notification;
+    }
+
+    private void upsertNotification(Region region, String title, String message, NotificationSeverity severity, LocalDateTime publishedAt) {
+        RegionalNotification notification = notificationRepository.findAll().stream()
+                .filter(existing -> existing.getRegion() != null)
+                .filter(existing -> Objects.equals(existing.getRegion().getId(), region.getId()))
+                .filter(existing -> Objects.equals(existing.getTitle(), title))
+                .findFirst()
+                .orElseGet(() -> notification(region, title, message, severity, publishedAt));
+
+        notification.setRegion(region);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setSeverity(severity);
+        notification.setPublishedAt(publishedAt);
+        notification.setActive(true);
+        notificationRepository.save(notification);
     }
 
     private Alarm alarm(Region region, String text) {
